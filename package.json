@@ -1,0 +1,12 @@
+{
+  "name": "mentor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agente de desenvolvimento assistido",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/cli/index.ts",
+    "build": "tsc",
+    "test": "vitest run"
+  }
+}
