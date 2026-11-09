@@ -17,6 +17,21 @@ npm start
 
 A CLI conversa com o Ollama em `http://localhost:11434`.
 
+## Modos de uso
+
+Depois de conhecer o aluno, o Mentor pergunta o que ele quer fazer:
+
+- **Criar um projeto:** fluxo completo de ideia, requisitos, arquitetura e implementação em camadas.
+- **Resolver um problema de estrutura de dados/algoritmos:** o agente colhe o enunciado e desenha a solução apenas logicamente, em passos e sem código, antes de o aluno implementar.
+
+O modo escolhido (`projeto` ou `algoritmo`) fica registrado no `PROJETO.md` e define quais fases o agente conduz.
+
+## LLMs
+
+Hoje o Mentor fala apenas com o **Ollama**, através de `OllamaLLM`, que implementa a interface `LLM` em `src/core/llm.ts`. O restante do núcleo depende dessa interface, não do Ollama diretamente.
+
+Futuramente, outros provedores (OpenAI, Anthropic etc.) poderão ser adicionados como novos adaptadores, implementando a mesma interface e sendo registrados em `createLLM()`, sem alterar o `engine` nem a CLI.
+
 ## Estrutura
 
 ```
