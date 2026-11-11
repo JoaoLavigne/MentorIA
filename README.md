@@ -144,7 +144,11 @@ As evals comparam modelos em 40 casos (accuracy, casos de borda, relevance e rob
 npm run evals -- --modelo llama3.2:3b --modelo llama3:latest
 ```
 
-<!-- RESULTADOS-EVALS -->
+| Modelo | Score total | Accuracy | Casos de borda | Relevance | Robustness | Catastróficas | p95 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `llama3.2:3b` | 30.0% | n/a | n/a | 30.0% | n/a | 0 | 3439.9 ms |
+
+Rodada `camada-8a` (relevance, 10 casos). A accuracy parcial ficou em 25.0% em `real-2026-11-10`; casos de borda e robustness ainda não têm rodada completa. Detalhes, limitações e comparação antes/depois em [`EVALS.md`](EVALS.md).
 
 ## LLMs
 
