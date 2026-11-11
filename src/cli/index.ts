@@ -2,6 +2,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { Engine, type Turn } from "../core/engine.js";
 import { createLLM } from "../core/llm.js";
+import { resolveSessionMenu } from "../core/sessionResolution.js";
 
 async function main() {
   const llm = createLLM();
@@ -14,16 +15,27 @@ async function main() {
     );
   }
 
-  const engine = new Engine({ llm, projectDir: process.cwd() });
-  const { resume, turn } = await engine.start();
+  const projectDir = process.cwd();
+  const engine = new Engine({ llm, projectDir });
   const rl = createInterface({ input: stdin, output: stdout });
-  let current: Turn = turn;
-
-  console.log(resume);
 
   try {
+    await resolveSessionMenu(projectDir, {
+      ask: (message) => rl.question(message),
+      write: (message) => console.log(message),
+    });
+
+    const { resume, turn } = await engine.start();
+    let current: Turn = turn;
+
+    console.log(resume);
+
     while (current.kind !== "done") {
-      console.log(`\n[${current.phase}]\n${current.text}`);
+      const label = current.phaseNumber
+        ? `FASE ${current.phaseNumber} [${current.phase}]`
+        : `[${current.phase}]`;
+
+      console.log(`\n${label}\n${current.text}`);
 
       if (current.kind === "generated" || current.kind === "notice") {
         current = await engine.next();

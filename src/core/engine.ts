@@ -1,11 +1,16 @@
 import { basename } from "node:path";
 import { writeProjectDoc } from "./agentDoc.js";
-import { checkDesignOutput, checkQuestionOutput } from "./guards.js";
+import {
+  checkAlgorithmOutput,
+  checkDesignOutput,
+  checkQuestionOutput,
+} from "./guards.js";
 import { writeSpecDocs } from "./specDocs.js";
 import type { LLM, Msg } from "./llm.js";
 import {
   getPhase,
   InvalidAnswerError,
+  phaseNumber,
   resolvePrompt,
   type ApplyResult,
   type Phase,
@@ -15,9 +20,9 @@ import {
 import { loadSession, saveSession, type SessionState } from "./session.js";
 
 export type Turn =
-  | { kind: "question"; phase: string; text: string }
-  | { kind: "generated"; phase: string; text: string }
-  | { kind: "notice"; phase: string; text: string }
+  | { kind: "question"; phase: string; phaseNumber?: number; text: string }
+  | { kind: "generated"; phase: string; phaseNumber?: number; text: string }
+  | { kind: "notice"; phase: string; phaseNumber?: number; text: string }
   | { kind: "done"; text: string };
 
 export type EngineStart = {
@@ -134,7 +139,7 @@ function resumeHint(state: SessionState): string {
   if (answered === 0) return "Vamos começar.";
 
   const phase = getPhase(state.currentPhase);
-  return `Retomando em "${phase.title}".`;
+  return `Retomando em FASE ${phaseNumber(phase.id, state.mode)} [${phase.title}].`;
 }
 
 export class Engine {
@@ -282,6 +287,7 @@ export class Engine {
     return {
       kind: "question",
       phase: phase.title,
+      phaseNumber: phaseNumber(phase.id, this.state!.mode),
       text: `${message}\n\n${resolvePrompt(question.prompt, this.state!)}${hint}`,
     };
   }
@@ -318,7 +324,12 @@ export class Engine {
         this.pending = null;
         await this.persist();
 
-        return { kind: "generated", phase: phase.title, text: output };
+        return {
+          kind: "generated",
+          phase: phase.title,
+          phaseNumber: phaseNumber(phase.id, state.mode),
+          text: output,
+        };
       }
 
       const question = phase.questions.find((item) => !item.isAnswered(state));
@@ -335,6 +346,7 @@ export class Engine {
         return {
           kind: "question",
           phase: phase.title,
+          phaseNumber: phaseNumber(phase.id, state.mode),
           text: `${withIntro}${hint}`,
         };
       }
@@ -355,6 +367,10 @@ export class Engine {
 
   private async ask(phase: Phase, question: Question): Promise<string> {
     const prompt = resolvePrompt(question.prompt, this.state!);
+    const guard =
+      this.state!.mode === "algoritmo"
+        ? checkAlgorithmOutput
+        : checkQuestionOutput;
     const messages: Msg[] = [
       {
         role: "system",
@@ -368,7 +384,7 @@ export class Engine {
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const output = (await this.deps.llm.chat(messages)).trim();
-      const check = checkQuestionOutput(output);
+      const check = guard(output);
 
       if (check.ok && output.length > 0) {
         return output;
@@ -396,6 +412,10 @@ export class Engine {
     const rules =
       generation.rules ??
       "não escreva código, não use blocos de código e não implemente a solução. Descreva apenas a lógica em passos.";
+    const guard =
+      this.state!.mode === "algoritmo"
+        ? checkAlgorithmOutput
+        : (generation.guard ?? checkDesignOutput);
     const messages: Msg[] = [
       { role: "system", content: `${phase.instruction}\n\nRegras: ${rules}` },
       { role: "user", content: generation.prompt(this.state!) },
@@ -403,9 +423,7 @@ export class Engine {
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const output = (await this.deps.llm.chat(messages)).trim();
-      const check = generation.guard
-        ? generation.guard(output)
-        : checkDesignOutput(output);
+      const check = guard(output);
 
       if (check.ok && output.length > 0) {
         return output;

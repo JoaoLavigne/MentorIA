@@ -49,6 +49,31 @@ alias mentor="node /caminho/para/MentorIA/dist/cli/index.js"
 
 A conversa acontece no terminal e precisa ser interativa (entrada via pipe não funciona).
 
+### VS Code
+
+Funciona no terminal integrado do VS Code, já que ele é um TTY e a conversa interativa roda normalmente. Abra a pasta do projeto do aluno no VS Code (`File > Open Folder`) e use o terminal integrado (`Ctrl` + backtick). Como o `package.json` não declara um entry `bin`, inicie de dentro dessa pasta apontando para o build ou para o TypeScript:
+
+```bash
+cd ~/mentor-teste
+node /caminho/para/MentorIA/dist/cli/index.js
+# ou, sem build
+/caminho/para/MentorIA/node_modules/.bin/tsx /caminho/para/MentorIA/src/cli/index.ts
+```
+
+Se preferir rodar o próprio repositório, `npm start` funciona, mas os arquivos gerados serão gravados na pasta do MentorIA — por isso o fluxo recomendado é abrir a pasta do aluno.
+
+### Atalho de demo (pasta isolada)
+
+```bash
+npm run demo
+```
+
+O script compila o projeto se necessário e roda o agente em `mentor-run/`, na raiz do repositório, para não misturar os arquivos gerados com o código do Mentor. Para escolher outra pasta:
+
+```bash
+npm run demo -- ~/mentor-teste
+```
+
 ### Configuração
 
 | Variável | Padrão | Descrição |
@@ -78,6 +103,21 @@ O modo escolhido (`projeto` ou `algoritmo`) fica registrado no `PROJETO.md` e de
 - `refazer <fase>` — refaz uma fase inteira a partir da Confirmação (ex.: `refazer ideia`).
 - `alterar <resposta>` — volta para uma pergunta específica (ex.: `alterar nucleo`).
 
+## Retomando uma sessão
+
+Ao abrir a CLI em uma pasta que já tem `.mentor/session.json` válido, o Mentor mostra um menu:
+
+```
+Encontrei uma sessão anterior: projeto "<pasta>", parou na etapa "FASE 3 [Ideia]".
+  [1] Continuar   [2] Começar uma nova (guarda a antiga como backup)
+```
+
+- **1** retoma a sessão de onde parou.
+- **2** move a sessão antiga para `.mentor/backups/session-<timestamp>.json` e começa do zero.
+- **Sessão corrompida ou inválida** é movida para `.mentor/backups/session-<timestamp>.json.bak` e o Mentor começa uma nova, sem erro.
+- **Sem sessão**, nada é perguntado e o fluxo começa normalmente.
+- Entrada inválida no menu apenas repete a pergunta.
+
 ## O que é gerado
 
 Na pasta onde a CLI foi executada:
@@ -85,6 +125,7 @@ Na pasta onde a CLI foi executada:
 - `PROJETO.md` — documento vivo com perfil, respostas, decisões e status.
 - `Spec.md` e `PRD.md` — criados após a aprovação na Confirmação.
 - `.mentor/session.json` — estado da sessão para retomar depois.
+- `.mentor/backups/` — backups de sessões anteriores ou corrompidas.
 - Arquivos de código das camadas aprovadas na Implementação.
 
 ## Desenvolvimento
@@ -94,6 +135,16 @@ npm run typecheck   # checagem de tipos
 npm test            # testes (vitest)
 npm run build       # compila para dist/
 ```
+
+## Evals
+
+As evals comparam modelos em 40 casos (accuracy, casos de borda, relevance e robustness) e também medem custo e latência. Veja os detalhes em [`EVALS.md`](EVALS.md).
+
+```bash
+npm run evals -- --modelo llama3.2:3b --modelo llama3:latest
+```
+
+<!-- RESULTADOS-EVALS -->
 
 ## LLMs
 

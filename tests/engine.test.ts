@@ -509,6 +509,63 @@ describe("Engine — modo algoritmo", () => {
     const done = await engine.next();
     expect(done.kind).toBe("done");
   });
+
+  it("reenvia o desenho à LLM com as linhas de código detectadas", async () => {
+    const llm = new FakeLLM((messages) => {
+      const system = messages[0]?.content ?? "";
+
+      if (system.includes("desenha a solução")) {
+        const feedback = messages.some(
+          (message) =>
+            message.role === "user" && message.content.includes("Linhas detectadas"),
+        );
+
+        if (feedback) {
+          return "Passo 1: entender o problema.\nPasso 2: percorrer de trás para frente.";
+        }
+
+        return "const total = 0;\nreturn total;";
+      }
+
+      const user = messages[1]?.content ?? "";
+      return user.split("Pergunta-base: ")[1] ?? "Pergunta de teste?";
+    });
+    const engine = new Engine({ llm, projectDir });
+    let turn = (await engine.start()).turn;
+
+    for (const answer of [
+      "iniciante",
+      "nenhuma",
+      "Python",
+      "usei IA para gerar código",
+      "arquitetura e boas práticas",
+      "resolver um problema de estrutura de dados",
+    ]) {
+      turn = await engine.answer(answer);
+    }
+
+    turn = await engine.answer("Dado um array, retorne a soma.");
+
+    expect(turn.kind).toBe("generated");
+
+    const designCalls = llm.calls.filter((messages) =>
+      (messages[0]?.content ?? "").includes("desenha a solução"),
+    );
+
+    expect(designCalls).toHaveLength(2);
+
+    const feedback = designCalls[1]
+      .map((message) => message.content)
+      .join("\n");
+
+    expect(feedback).toContain("sua resposta contém código");
+    expect(feedback).toContain("Linhas detectadas");
+    expect(feedback).toContain("const total = 0;");
+    expect(feedback).toContain("return total;");
+
+    const state = await loadSession(projectDir);
+    expect(state.problem.design).toContain("Passo 1");
+  });
 });
 
 describe("Engine — entendimento", () => {

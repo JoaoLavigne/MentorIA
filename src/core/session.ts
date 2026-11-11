@@ -164,39 +164,7 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
 }
 
-export async function loadSession(projectDir: string): Promise<SessionState> {
-  const file = sessionFile(projectDir);
-
-  let text: string;
-  try {
-    text = await readFile(file, "utf8");
-  } catch (error) {
-    if (isNodeError(error) && error.code === "ENOENT") {
-      return createSession();
-    }
-
-    throw new SessionError(
-      `Não foi possível ler o estado da sessão em ${file}. Verifique as permissões do arquivo.`,
-      { cause: error },
-    );
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch (error) {
-    throw new SessionError(
-      `O estado da sessão em ${file} está corrompido. Apague o arquivo para começar de novo.`,
-      { cause: error },
-    );
-  }
-
-  if (!isValidSession(parsed)) {
-    throw new SessionError(
-      `O estado da sessão em ${file} está em um formato inválido. Apague o arquivo para começar de novo.`,
-    );
-  }
-
+function normalizeSession(parsed: SessionState): SessionState {
   return {
     ...parsed,
     problem: isRecord(parsed.problem) ? (parsed.problem as Problem) : {},
@@ -208,6 +176,100 @@ export async function loadSession(projectDir: string): Promise<SessionState> {
       : {},
     closing: isRecord(parsed.closing) ? (parsed.closing as Closing) : {},
   };
+}
+
+export type SessionInspection =
+  | { kind: "none" }
+  | { kind: "valid"; state: SessionState }
+  | { kind: "corrupt"; reason: "json" | "formato" };
+
+export async function inspectSession(
+  projectDir: string,
+): Promise<SessionInspection> {
+  const file = sessionFile(projectDir);
+
+  let text: string;
+  try {
+    text = await readFile(file, "utf8");
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return { kind: "none" };
+    }
+
+    throw new SessionError(
+      `Não foi possível ler o estado da sessão em ${file}. Verifique as permissões do arquivo.`,
+      { cause: error },
+    );
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { kind: "corrupt", reason: "json" };
+  }
+
+  if (!isValidSession(parsed)) {
+    return { kind: "corrupt", reason: "formato" };
+  }
+
+  return { kind: "valid", state: normalizeSession(parsed) };
+}
+
+export async function loadSession(projectDir: string): Promise<SessionState> {
+  const inspection = await inspectSession(projectDir);
+
+  if (inspection.kind === "none") {
+    return createSession();
+  }
+
+  if (inspection.kind === "corrupt") {
+    const file = sessionFile(projectDir);
+    const detail =
+      inspection.reason === "json" ? "está corrompido" : "está em um formato inválido";
+
+    throw new SessionError(
+      `O estado da sessão em ${file} ${detail}. Apague o arquivo para começar de novo.`,
+    );
+  }
+
+  return inspection.state;
+}
+
+function backupTimestamp(): string {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+export type BackupReason = "backup" | "corrupt";
+
+export async function backupSession(
+  projectDir: string,
+  reason: BackupReason = "backup",
+): Promise<string | null> {
+  const file = sessionFile(projectDir);
+  const suffix = reason === "corrupt" ? ".json.bak" : ".json";
+  const target = join(
+    projectDir,
+    ".mentor",
+    "backups",
+    `session-${backupTimestamp()}${suffix}`,
+  );
+
+  try {
+    await mkdir(join(projectDir, ".mentor", "backups"), { recursive: true });
+    await rename(file, target);
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return null;
+    }
+
+    throw new SessionError(
+      `Não foi possível guardar o backup da sessão em ${target}. Verifique as permissões da pasta.`,
+      { cause: error },
+    );
+  }
+
+  return target;
 }
 
 export async function saveSession(

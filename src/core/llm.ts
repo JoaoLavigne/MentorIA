@@ -1,3 +1,5 @@
+import { performance } from "node:perf_hooks";
+
 export type Role = "system" | "user" | "assistant";
 export type Msg = { role: Role; content: string };
 
@@ -13,8 +15,17 @@ export type OllamaOptions = {
   model?: string;
 };
 
+export type MetricasOllama = {
+  tokensEntrada: number;
+  tokensSaida: number;
+  tempoMs: number;
+};
+
 type ChatResponse = {
   message: { role: string; content: string };
+  prompt_eval_count?: number;
+  eval_count?: number;
+  total_duration?: number;
 };
 
 type TagsResponse = {
@@ -24,6 +35,7 @@ type TagsResponse = {
 export class OllamaLLM implements LLM {
   readonly model: string;
   private readonly baseUrl: string;
+  private readonly chamadas: MetricasOllama[] = [];
 
   constructor(options: OllamaOptions = {}) {
     this.baseUrl =
@@ -55,13 +67,27 @@ export class OllamaLLM implements LLM {
   }
 
   async chat(messages: Msg[]): Promise<string> {
+    const inicio = performance.now();
     const data = await this.request<ChatResponse>("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: this.model, messages, stream: false }),
     });
 
+    this.chamadas.push({
+      tokensEntrada: data.prompt_eval_count ?? 0,
+      tokensSaida: data.eval_count ?? 0,
+      tempoMs:
+        typeof data.total_duration === "number"
+          ? data.total_duration / 1_000_000
+          : performance.now() - inicio,
+    });
+
     return data.message.content;
+  }
+
+  consumirChamadas(): MetricasOllama[] {
+    return this.chamadas.splice(0, this.chamadas.length);
   }
 
   async listModels(): Promise<string[]> {

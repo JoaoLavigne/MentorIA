@@ -109,14 +109,8 @@ Exemplo (enunciado: retornar o tamanho da última palavra de uma string):
 
 ### 3.8 Entendimento (ligado por padrão, com opção de pular)
 
-- Perguntas sobre o que foi implementado, para provar que o aluno entende o próprio projeto:
-  - Explique como funciona o núcleo do projeto.
-  - Justifique por que você optou por essa arquitetura.
-  - Crie 3 testes que validem o comportamento esperado.
-  - Quais são os principais riscos de segurança do projeto?
-  - Qual regra do programa é inquebrável?
-- As respostas são registradas no `PROJETO.md`.
-- Se o aluno pular, isso é registrado no `PROJETO.md`.
+- Perguntas sobre o que foi implementado.
+- O formato exato (perguntas soltas ou o aluno explicando o mapa do próprio app) ainda está em aberto (ver seção 9).
 
 ### 3.9 Pós-MVP
 
@@ -247,6 +241,7 @@ A extensão do VS Code (pós-MVP) acrescenta: painel de chat lateral, acesso à 
 - **Escopo do MVP:** incluir a pergunta "o que fica fora desta versão?" no Esboço.
 - **Mapa de aprendizado:** a ideia original (colar o enunciado e a IA dizer o que o aluno precisa aprender) não está no fluxo atual. É um gancho forte para a demo.
 - **Segurança mais cedo:** além da pergunta final, perguntar o mínimo também no Esboço, junto com os casos de borda.
+- **Formato do modo Entendimento:** perguntas soltas ou o aluno explicando o mapa do próprio app.
 - **Nome do produto.**
 - **Regulamento do hackathon:** confirmar exigências de vídeo de demonstração, repositório público e regras de uso de IA.
 
@@ -268,5 +263,5 @@ A extensão do VS Code (pós-MVP) acrescenta: painel de chat lateral, acesso à 
 
 - **Tagline:** "A IA que te faz pensar, não que pensa por você."
 - **Demonstração:** o aluno cola o enunciado do próprio hackathon e sai com um `PROJETO.md` feito a partir das respostas dele (meta-demo).
-- **Em 30 segundos:** em vez de "IA que faz por você", uma IA que te faz decidir, e só depois constrói e confere se você entendeu.
+- **Em 30 segundos:** Não faz por você, guia o seu raciocinio para encontrar a solução. Juntos projetam, criam os requisitos de software, implementam a solução e por fim testam.
 - **Argumento de acesso:** roda local com Ollama, de graça, para quem não pode pagar uma LLM.

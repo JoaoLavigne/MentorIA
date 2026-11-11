@@ -1,0 +1,10 @@
+{"id":"rel-001","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"nucleo","obs":"pergunta direta","roteiro":["qual e a ideia central do aplicativo de financas?"]}
+{"id":"rel-002","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"nucleo","obs":"nao sei por onde comecar","roteiro":["nao sei por onde comecar o sistema de biblioteca"]}
+{"id":"rel-003","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"entradas","obs":"resposta vaga","roteiro":["o usuario digita coisas la"]}
+{"id":"rel-004","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"entradas","obs":"aluno cita assunto de slot posterior (saidas)","roteiro":["quero que a saida seja em formato json com relatorios"]}
+{"id":"rel-005","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"processamento","obs":"pergunta direta","roteiro":["como o sistema calcula os pontos do jogo?"]}
+{"id":"rel-006","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"processamento","obs":"nao sei por onde comecar","roteiro":["estou perdido sobre como fazer a filtragem de produtos"]}
+{"id":"rel-007","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"saidas","obs":"resposta vaga","roteiro":["mostra na tela de algum jeito"]}
+{"id":"rel-008","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"saidas","obs":"aluno cita assunto de slot posterior (criterios)","roteiro":["o criterio de sucesso e carregar em menos de um segundo"]}
+{"id":"rel-009","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"criterios","obs":"pergunta direta","roteiro":["quais sao os requisitos de desempenho para a agenda?"]}
+{"id":"rel-010","categoria":"relevance","modo":"projeto","fase":"perguntas","slotPendente":"criterios","obs":"resposta vaga","roteiro":["tem que funcionar bem e ser seguro"]}

@@ -1,5 +1,10 @@
 node_modules/
 dist/
+mentor-run/
 .mentor/
 .env
 *.log
+src/core/evals/tmp/
+src/core/evals/results/*
+!src/core/evals/results/.gitkeep
+testes_mentorIA/

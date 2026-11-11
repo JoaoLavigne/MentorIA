@@ -6,9 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/cli/index.ts",
+    "demo": "bash scripts/run-mentor.sh",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "evals": "tsx src/core/evals/runner/cli.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

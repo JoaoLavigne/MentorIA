@@ -29,6 +29,33 @@ const phases: Record<PhaseId, Phase> = {
   entendimento: entendimentoPhase,
 };
 
+const PROJECT_ORDER: PhaseId[] = [
+  "conhecendo-dev",
+  "escolha-modo",
+  "ideia",
+  "perguntas",
+  "esboco",
+  "confirmacao",
+  "implementacao",
+  "camada-preparo",
+  "camada-codigo",
+  "entendimento",
+];
+
+const ALGORITHM_ORDER: PhaseId[] = [
+  "conhecendo-dev",
+  "escolha-modo",
+  "enunciado",
+  "desenho",
+];
+
+export function phaseNumber(id: PhaseId, mode?: string): number {
+  const order = mode === "algoritmo" ? ALGORITHM_ORDER : PROJECT_ORDER;
+  const index = order.indexOf(id);
+
+  return index === -1 ? 0 : index + 1;
+}
+
 export function getPhase(id: string): Phase {
   const phase = phases[id as PhaseId];
 
